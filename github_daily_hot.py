@@ -148,6 +148,10 @@ def enrich_repositories(
 ) -> list[dict[str, Any]]:
     repo_list = list(repositories)
     annotations = ai_enricher(repo_list, api_key, GLM_MODEL) if api_key else {}
+    if api_key:
+        print(f"GLM-4.5-Air 注释生成：{len(annotations)}/{len(repo_list)} 项。")
+    else:
+        print("警告：未配置 ZHIPU_API_KEY，将使用降级内容。", file=sys.stderr)
     enriched: list[dict[str, Any]] = []
     for index, repo in enumerate(repo_list):
         item = dict(repo)
