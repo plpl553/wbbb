@@ -10,7 +10,7 @@
 4. 打开 `Actions → GitHub Daily Hot to Feishu → Run workflow`。
 5. 首次先勾选 `dry_run` 检查生成结果；确认后取消勾选，再运行一次完成真实推送。
 
-如果飞书机器人启用了关键词校验，请允许关键词 `GitHub`。
+如果飞书机器人启用了关键词校验，请允许关键词 `github`。消息正文固定包含该关键词。
 
 ## 热点口径
 
