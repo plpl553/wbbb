@@ -2,13 +2,16 @@
 
 这项独立任务每天北京时间 09:00 汇总 GitHub 近 7 天的新锐仓库，并通过仓库现有的飞书通知 Secret 发送一张消息卡片。它不会改变 TrendRadar 原有的新闻抓取任务。
 
+每个热点项目都会展示英文原始简介、中文翻译和一行中文用途说明，便于快速判断项目价值。翻译和摘要由 `glm-4.5-air` 一次批量生成；模型接口临时不可用时，任务会保留英文原文和基于仓库元数据生成的用途说明，不会因此中断飞书推送。
+
 ## 首次启用
 
 1. 打开仓库 `Settings → Secrets and variables → Actions`。
 2. 添加或确认 Repository secret `FEISHU_WEBHOOK_URL`，值为目标飞书群的自定义机器人 Webhook。
 3. 如机器人启用了签名校验，再添加 `FEISHU_SIGNING_SECRET`。
-4. 打开 `Actions → GitHub Daily Hot to Feishu → Run workflow`。
-5. 首次先勾选 `dry_run` 检查生成结果；确认后取消勾选，再运行一次完成真实推送。
+4. 添加 Repository secret `ZHIPU_API_KEY`，值为智谱开放平台 API Key。
+5. 打开 `Actions → GitHub Daily Hot to Feishu → Run workflow`。
+6. 首次先勾选 `dry_run` 检查生成结果；确认后取消勾选，再运行一次完成真实推送。
 
 如果飞书机器人启用了关键词校验，请允许关键词 `github`。消息正文固定包含该关键词。
 
