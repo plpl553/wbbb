@@ -38,6 +38,7 @@ class GitHubDailyHotTests(unittest.TestCase):
         self.assertEqual(card["msg_type"], "interactive")
         self.assertIn("2026-08-31", card["card"]["header"]["title"]["content"])
         markdown = card["card"]["elements"][0]["content"]
+        self.assertIn("github", markdown)
         self.assertIn("example/hot-project", markdown)
         self.assertIn("1,234", markdown)
         self.assertIn("GitHub Search API", card["card"]["elements"][1]["elements"][0]["content"])
@@ -66,5 +67,4 @@ class GitHubDailyHotTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
 
