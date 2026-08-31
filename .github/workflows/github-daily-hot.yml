@@ -1,6 +1,9 @@
 name: GitHub Daily Hot to Feishu
 
 on:
+  push:
+    branches:
+      - codex/verify-github-daily-10
   schedule:
     # GitHub Actions uses UTC. 01:00 UTC = 09:00 Asia/Shanghai.
     - cron: "0 1 * * *"
