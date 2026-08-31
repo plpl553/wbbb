@@ -126,6 +126,7 @@ def build_feishu_card(
                 {
                     "tag": "markdown",
                     "content": (
+                        f"关键词：`github`\n\n"
                         f"近 **{days} 天**新建仓库按 Star 总数排序；每天固定时间刷新。\n\n{body}"
                     ),
                 },
