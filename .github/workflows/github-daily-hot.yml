@@ -1,0 +1,49 @@
+name: GitHub Daily Hot to Feishu
+
+on:
+  schedule:
+    # GitHub Actions uses UTC. 01:00 UTC = 09:00 Asia/Shanghai.
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview the Feishu card in logs without sending"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-daily-hot-feishu
+  cancel-in-progress: true
+
+jobs:
+  send-daily-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and send report
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        shell: bash
+        run: |
+          if [[ "$DRY_RUN" == "1" ]]; then
+            python github_daily_hot.py --dry-run
+          else
+            python github_daily_hot.py
+          fi
+
+
