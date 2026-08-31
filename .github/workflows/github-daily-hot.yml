@@ -35,6 +35,7 @@ jobs:
       - name: Build and send report
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
@@ -45,5 +46,4 @@ jobs:
           else
             python github_daily_hot.py
           fi
-
 
