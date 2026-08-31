@@ -38,12 +38,13 @@ jobs:
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
+          REPORT_LIMIT: "10"
           DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
         shell: bash
         run: |
           if [[ "$DRY_RUN" == "1" ]]; then
-            python github_daily_hot.py --dry-run
+            python github_daily_hot.py --dry-run --limit "$REPORT_LIMIT"
           else
-            python github_daily_hot.py
+            python github_daily_hot.py --limit "$REPORT_LIMIT"
           fi
 
