@@ -2,9 +2,9 @@ name: GitHub Daily Hot to Feishu
 
 on:
   schedule:
-    # Temporary registration probe; removed after the first verified schedule event.
-    - cron: "*/5 * * * *"
-      timezone: "Etc/UTC"
+    # One-time dry-run registration probe for 2026-09-02 at 10:55 Asia/Shanghai.
+    - cron: "55 10 2 9 *"
+      timezone: "Asia/Shanghai"
     # Three delivery opportunities reduce the impact of delayed or dropped schedules.
     # A successful run suppresses later attempts for the same Shanghai calendar day.
     - cron: "17 9 * * *"
@@ -92,7 +92,7 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
           REPORT_LIMIT: "10"
-          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || github.event.schedule == '55 10 2 9 *' && '1' || '0' }}
         shell: bash
         run: |
           if [[ "$DRY_RUN" == "1" ]]; then
