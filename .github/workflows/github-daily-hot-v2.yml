@@ -2,16 +2,13 @@ name: GitHub Daily Hot to Feishu
 
 on:
   schedule:
-    # One-time dry-run registration probe for 2026-09-02 at 10:55 Asia/Shanghai.
-    - cron: "55 10 2 9 *"
+    # Start early to absorb GitHub's observed ~30-minute scheduler delay. The
+    # first run waits until 09:17; queued fallbacks are suppressed after success.
+    - cron: "30 8 * * *"
       timezone: "Asia/Shanghai"
-    # Three delivery opportunities reduce the impact of delayed or dropped schedules.
-    # A successful run suppresses later attempts for the same Shanghai calendar day.
-    - cron: "17 9 * * *"
+    - cron: "45 8 * * *"
       timezone: "Asia/Shanghai"
-    - cron: "32 9 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "47 9 * * *"
+    - cron: "0 9 * * *"
       timezone: "Asia/Shanghai"
   workflow_dispatch:
     inputs:
@@ -32,7 +29,7 @@ concurrency:
 jobs:
   send-daily-report:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 60
     steps:
       - name: Check whether today's digest was already sent
         id: dedupe
@@ -84,6 +81,20 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Wait until 09:17 Asia/Shanghai
+        if: github.event_name == 'schedule' && steps.dedupe.outputs.skip != 'true'
+        shell: bash
+        run: |
+          target="$(TZ=Asia/Shanghai date -d "$(TZ=Asia/Shanghai date +%F) 09:17:00" +%s)"
+          now="$(date +%s)"
+          if (( now < target )); then
+            delay=$((target - now))
+            echo "Scheduler arrived early; waiting ${delay}s until 09:17 Asia/Shanghai."
+            sleep "$delay"
+          else
+            echo "Scheduler arrived after 09:17; sending immediately."
+          fi
+
       - name: Build and send report
         if: steps.dedupe.outputs.skip != 'true'
         env:
@@ -92,6 +103,7 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
           REPORT_LIMIT: "10"
+          # Keep a delayed one-time probe harmless even after its cron is removed.
           DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || github.event.schedule == '55 10 2 9 *' && '1' || '0' }}
         shell: bash
         run: |
