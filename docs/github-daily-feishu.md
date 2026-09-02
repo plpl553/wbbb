@@ -1,6 +1,6 @@
 # GitHub 每日热点推送到飞书
 
-这项独立任务每天北京时间 09:17 汇总 GitHub 近 7 天的新锐仓库，并通过仓库现有的飞书通知 Secret 发送一张消息卡片。它不会改变 TrendRadar 原有的新闻抓取任务。
+这项独立任务每天北京时间 09:17 汇总 GitHub 近 7 天的新锐仓库，并通过仓库现有的飞书通知 Secret 发送一张消息卡片。09:32 和 09:47 是 GitHub 调度延迟或丢失时的后备触发点；工作流会检查上海自然日内是否已有成功记录，因此每天最多发送一次。它不会改变 TrendRadar 原有的新闻抓取任务。
 
 每个热点项目都会展示英文原始简介、中文翻译和一行中文用途说明，便于快速判断项目价值。翻译和摘要由 `glm-4.5-air` 一次批量生成；模型接口临时不可用时，任务会保留英文原文和基于仓库元数据生成的用途说明，不会因此中断飞书推送。
 
@@ -21,7 +21,7 @@ GitHub 没有公开的 Trending API。本任务使用 GitHub Search API，选择
 
 ## 调整设置
 
-- 运行时间：编辑 `.github/workflows/github-daily-hot.yml` 的 cron。GitHub Actions 使用 UTC，`17 1 * * *` 对应北京时间 09:17，并避开整点高峰。
+- 运行时间：编辑 `.github/workflows/github-daily-hot-v2.yml` 的 cron。工作流使用 `Asia/Shanghai` 时区，主触发点为 09:17，09:32 和 09:47 为自动后备触发点。
 - 统计窗口：修改 `github_daily_hot.py` 中的 `DEFAULT_DAYS`。
 - 项目数量：修改 `github_daily_hot.py` 中的 `DEFAULT_LIMIT`。
 
