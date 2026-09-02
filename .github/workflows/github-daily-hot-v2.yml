@@ -1,0 +1,103 @@
+name: GitHub Daily Hot to Feishu
+
+on:
+  schedule:
+    # Temporary registration probe; removed after the first verified schedule event.
+    - cron: "*/5 * * * *"
+      timezone: "Etc/UTC"
+    # Three delivery opportunities reduce the impact of delayed or dropped schedules.
+    # A successful run suppresses later attempts for the same Shanghai calendar day.
+    - cron: "17 9 * * *"
+      timezone: "Asia/Shanghai"
+    - cron: "32 9 * * *"
+      timezone: "Asia/Shanghai"
+    - cron: "47 9 * * *"
+      timezone: "Asia/Shanghai"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview the Feishu card in logs without sending"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: github-daily-hot-feishu
+  cancel-in-progress: false
+
+jobs:
+  send-daily-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check whether today's digest was already sent
+        id: dedupe
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          today="$(TZ=Asia/Shanghai date +%F)"
+          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/github-daily-hot-v2.yml/runs?event=schedule&status=success&per_page=30"
+          if ! response="$(curl --fail --silent --show-error --retry 3 --retry-all-errors \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$api_url")"; then
+            echo "GitHub run lookup failed; continuing so today's digest is not missed."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          prior_count="$(jq --arg today "$today" --argjson current "$CURRENT_RUN_ID" '
+            def shanghai_date:
+              fromdateiso8601 | . + 28800 | strftime("%Y-%m-%d");
+            [.workflow_runs[]
+              | select(.id != $current)
+              | select((.created_at | shanghai_date) == $today)]
+            | length
+          ' <<< "$response")"
+          if (( prior_count > 0 )); then
+            echo "A successful scheduled digest already exists for $today; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No successful scheduled digest exists for $today; continuing."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Record duplicate suppression
+        if: steps.dedupe.outputs.skip == 'true'
+        run: echo "Today's GitHub digest was already sent successfully."
+
+      - name: Check out repository
+        if: steps.dedupe.outputs.skip != 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.dedupe.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and send report
+        if: steps.dedupe.outputs.skip != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+          FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
+          REPORT_LIMIT: "10"
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        shell: bash
+        run: |
+          if [[ "$DRY_RUN" == "1" ]]; then
+            python github_daily_hot.py --dry-run --limit "$REPORT_LIMIT"
+          else
+            python github_daily_hot.py --limit "$REPORT_LIMIT"
+          fi
+
