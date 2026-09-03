@@ -22,3 +22,8 @@ jobs:
         run: |
           gh api --method PUT "repos/${GITHUB_REPOSITORY}/actions/workflows/crawler.yml/enable"
           echo "Enabled crawler.yml for scheduled GitHub daily alerts."
+
+  send-today-catch-up:
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/github-daily-hot-v2.yml
+    secrets: inherit
