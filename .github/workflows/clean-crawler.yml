@@ -1,6 +1,11 @@
 name: Enable GitHub Daily Scheduler
 
 on:
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/clean-crawler.yml"
   workflow_dispatch:
 
 permissions:
