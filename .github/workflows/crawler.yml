@@ -5,6 +5,8 @@ on:
     # One-time dry-run probe to prove that the reactivated workflow receives schedule events.
     - cron: "45 10 3 9 *"
       timezone: "Asia/Shanghai"
+    - cron: "30 11 3 9 *"
+      timezone: "Asia/Shanghai"
     # Start early to absorb the repository's observed ~30-minute scheduler delay.
     - cron: "30 8 * * *"
       timezone: "Asia/Shanghai"
