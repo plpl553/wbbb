@@ -2,6 +2,9 @@ name: GitHub Daily Hot Scheduler
 
 on:
   schedule:
+    # Temporary live scheduler verification; forced dry-run in the called workflow.
+    - cron: "*/5 * * * *"
+      timezone: "Asia/Shanghai"
     # Start early to absorb the repository's observed ~30-minute scheduler delay.
     - cron: "30 8 * * *"
       timezone: "Asia/Shanghai"
