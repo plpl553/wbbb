@@ -1,15 +1,7 @@
 name: GitHub Daily Hot to Feishu
 
 on:
-  schedule:
-    # Start early to absorb GitHub's observed ~30-minute scheduler delay. The
-    # first run waits until 09:17; queued fallbacks are suppressed after success.
-    - cron: "30 8 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "45 8 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "0 9 * * *"
-      timezone: "Asia/Shanghai"
+  workflow_call:
   workflow_dispatch:
     inputs:
       dry_run:
@@ -41,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           today="$(TZ=Asia/Shanghai date +%F)"
-          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/github-daily-hot-v2.yml/runs?event=schedule&status=success&per_page=30"
+          api_url="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/crawler.yml/runs?event=schedule&status=success&per_page=30"
           if ! response="$(curl --fail --silent --show-error --retry 3 --retry-all-errors \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -103,8 +95,8 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
           REPORT_LIMIT: "10"
-          # Keep a delayed one-time probe harmless even after its cron is removed.
-          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || github.event.schedule == '55 10 2 9 *' && '1' || '0' }}
+          # The one-time activation probe validates schedule delivery without sending.
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || github.event.schedule == '45 10 3 9 *' && '1' || '0' }}
         shell: bash
         run: |
           if [[ "$DRY_RUN" == "1" ]]; then
