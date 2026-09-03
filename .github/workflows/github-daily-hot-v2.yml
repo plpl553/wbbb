@@ -95,8 +95,8 @@ jobs:
           FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
           FEISHU_SIGNING_SECRET: ${{ secrets.FEISHU_SIGNING_SECRET }}
           REPORT_LIMIT: "10"
-          # Retired activation probes stay dry-run guards in case GitHub delivers queued events late.
-          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || (github.event.schedule == '45 10 3 9 *' || github.event.schedule == '30 11 3 9 *') && '1' || '0' }}
+          # Diagnostic schedules are always dry-run and never call Feishu.
+          DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) || (github.event.schedule == '45 10 3 9 *' || github.event.schedule == '30 11 3 9 *' || github.event.schedule == '*/5 * * * *') && '1' || '0' }}
         shell: bash
         run: |
           if [[ "$DRY_RUN" == "1" ]]; then
