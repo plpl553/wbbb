@@ -1,18 +1,6 @@
-name: GitHub Daily Hot Scheduler
+name: News Crawler (manual only)
 
 on:
-  schedule:
-    # Temporary live scheduler verification; forced dry-run in the called workflow.
-    - cron: "*/5 * * * *"
-      timezone: "Asia/Shanghai"
-    # Start early to absorb the repository's observed ~30-minute scheduler delay.
-    - cron: "30 8 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "45 8 * * *"
-      timezone: "Asia/Shanghai"
-    - cron: "0 9 * * *"
-      timezone: "Asia/Shanghai"
-
   workflow_dispatch:
 
 concurrency:
@@ -23,11 +11,6 @@ permissions:
   contents: read
 
 jobs:
-  github-daily-hot:
-    if: github.event_name == 'schedule'
-    uses: ./.github/workflows/github-daily-hot-v2.yml
-    secrets: inherit
-
   crawl:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
